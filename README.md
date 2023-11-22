@@ -9,7 +9,7 @@
 
 ## Stack
 
-Python 3.11, Django 4.2, Django Rest Framework 3.14.0
+Python 3.11, Django 4.2, Django Rest Framework 3.14.0, celery 5.3.5, django-celery-beat 2.5.0, redis 4.5.4
 
 ### Установка, Как запустить проект:
 
