@@ -9,7 +9,7 @@ services:
       - static_value:/app/static/
       - /app/tmp
     env_file:
-      - ../backend_telegram/.env
+      - ../.env
     depends_on:
       - db
 
@@ -20,14 +20,15 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     restart: always
     env_file:
-      - ../backend_telegram/.env
-    ports:
-      - '5432:5432'
+      - ../.env
+#    Порт для тестирования
+#    ports:
+#      - '5432:5432'
 
   bot:
     build: ../bot
     env_file:
-      - ../backend_telegram/.env
+      - ../.env
     depends_on:
       - web
       - db
@@ -37,7 +38,7 @@ services:
 
   nginx:
     image: nginx:1.21.3-alpine
-
+    command: /bin/sh -c "sleep 10; nginx -g 'daemon off;'"
     ports:
       - '80:80'
 
@@ -61,7 +62,7 @@ services:
       - ../backend_telegram:/app
       - ../backend_telegram/logs:/app/logs
     env_file:
-      - ../backend_telegram/.env
+      - ../.env
     depends_on:
       - redis
       - db
@@ -71,7 +72,7 @@ services:
     build: ../backend_telegram
     command: celery -A backend_telegram beat -l info
     env_file:
-      - ../backend_telegram/.env
+      - ../.env
     depends_on:
       - redis
       - db
