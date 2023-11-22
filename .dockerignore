@@ -1,0 +1,11 @@
+.github/
+venv/
+backend_telegram/Dockerfile
+DOCUMENTATION.md
+README.md
+docker-compose.yaml
+.idea/
+__pycache__/
+.git/
+.gitignore
+.dockerignore

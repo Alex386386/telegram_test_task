@@ -1,0 +1,95 @@
+version: '3.7'
+
+services:
+  web:
+    build: ../backend_telegram
+    restart: always
+    volumes:
+      - ../backend_telegram:/app
+      - static_value:/app/static/
+      - /app/tmp
+    env_file:
+      - ../backend_telegram/.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14.0
+    container_name: database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+    env_file:
+      - ../backend_telegram/.env
+    ports:
+      - '5432:5432'
+
+  bot:
+    build: ../bot
+    env_file:
+      - ../backend_telegram/.env
+    depends_on:
+      - web
+      - db
+      - nginx
+      - celery-beat
+      - celery
+
+  nginx:
+    image: nginx:1.21.3-alpine
+
+    ports:
+      - '80:80'
+
+    volumes:
+      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static_value:/var/html/static/
+
+    depends_on:
+      - web
+
+  redis:
+    image: redis:7-alpine
+    depends_on:
+      - web
+      - db
+
+  celery:
+    build: ../backend_telegram
+    command: celery --app=backend_telegram worker --loglevel=warning --logfile=logs/celery.log --concurrency=4
+    volumes:
+      - ../backend_telegram:/app
+      - ../backend_telegram/logs:/app/logs
+    env_file:
+      - ../backend_telegram/.env
+    depends_on:
+      - redis
+      - db
+      - web
+
+  celery-beat:
+    build: ../backend_telegram
+    command: celery -A backend_telegram beat -l info
+    env_file:
+      - ../backend_telegram/.env
+    depends_on:
+      - redis
+      - db
+      - celery
+      - web
+
+#  Сервис задокументирован на случай добавления более тяжеловесных задач.
+#  flower:
+#    build: ../backend_telegram
+#    command: celery -A backend_telegram --broker=redis://redis:6379/0 flower --port=5555
+#    ports:
+#      - '5555:5555'
+#    env_file:
+#      - ../backend_telegram/.env
+#    depends_on:
+#      - redis
+#      - celery
+
+volumes:
+    postgres_data:
+    static_value:
